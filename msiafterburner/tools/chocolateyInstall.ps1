@@ -4,6 +4,8 @@ $checksum = '42B257623C9445D5BC5EEDDD44DA8CC885C43A16FD2A98077338F937B777EAA3'
 $checksumtype = 'sha256'
 $unpackDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
 $unpackFile = Join-Path $unpackDir 'afterburner.zip'
+$pp = Get-PackageParameters
+$RTSSdesktopShortcutPath = "$env:PUBLIC\Desktop\RTSS.lnk"
 
 $toolsPath = Split-Path $MyInvocation.MyCommand.Definition
 . $toolsPath\helpers.ps1
@@ -27,3 +29,23 @@ Install-ChocolateyInstallPackage @packageArgs
 
 Remove-Item $unpackFile -Recurse -Force
 Remove-Item $file -Recurse -Force
+
+function InstallShortcut {
+  param (
+    $ShortcutPath
+  )
+
+  $installLocation = Get-AppInstallLocation "MSI Afterburner*"
+
+  $shortcutArgs = @{
+    shortcutFilePath = $ShortcutPath
+    workingDirectory = "$installLocation"
+    targetPath       = "$installLocation\RTSS.exe"
+  }
+
+  Install-ChocolateyShortcut @shortcutArgs
+}
+
+if ($pp['RTSSDesktopShortcut']) {
+    InstallShortcut $RTSSdesktopShortcutPath
+}
